@@ -41,7 +41,7 @@
 
 
 
-
+// Apify API for linkedin job scraping
 import Resume from '../models/Resume.js';
 import { fetchApifyRunDatasetId } from '../utils/fetchApifyRun.js';
 import { fetchApifyDatasetItems } from '../utils/fetchApifyDatasetItems.js';

@@ -25,7 +25,7 @@ export default function Signup() {
   };
 
   return (
-    <div className="p-6 max-w-md mx-auto bg-white rounded shadow-md">
+    <div className="p-6 max-w-md mx-auto bg-white rounded shadow-md mt-10">
       <h2 className="text-2xl font-bold mb-4 text-center"
       style={{ color: 'rgb(12 64 126/var(--tw-bg-opacity))' }}
       >Create Your Account</h2>

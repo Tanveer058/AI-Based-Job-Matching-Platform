@@ -1,16 +1,8 @@
-import {
-  AppBar,
-  Toolbar,
-  Button,
-  IconButton,
-  Drawer,
-  List,
-  ListItem,
-  ListItemText,
-  useMediaQuery
-} from '@mui/material';
+import { AppBar, Toolbar, Button, IconButton, Drawer, List, ListItem, ListItemText, 
+  useMediaQuery, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import { useState, useContext } from 'react';
+import CloseIcon from '@mui/icons-material/Close';
+import { useState, useContext, useEffect } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { useTheme } from '@mui/material/styles';
@@ -22,7 +14,25 @@ export default function Navbar() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
-  const toggleDrawer = () => setDrawerOpen(!drawerOpen);
+  const toggleDrawer = () => setDrawerOpen(prev => !prev);
+
+  const [showNavbar, setShowNavbar] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setShowNavbar(false);
+      } else {
+        setShowNavbar(true);
+      }
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
 
   const navLinks = [
     { label: 'Home', path: '/' },
@@ -33,34 +43,79 @@ export default function Navbar() {
     !auth.token && { label: 'Signup', path: '/signup' },
   ].filter(Boolean);
 
-
   return (
     <>
-      <AppBar className='shadow mb-8' position="static" sx={{ backgroundColor: '#ffffff' }}>
-        <Toolbar className="flex justify-between items-center px-4">
-            <Link to="/" style={{ display: 'flex', alignItems: 'center', margin: 20 }}>  
-              <img
-                src={LogoImg}
-                alt="Logo"
-                style={{
-                  height: 60,
-                  // margin: 20,
-                  display: 'block',
-                  marginTop: 0,
-                  marginBottom: 0,
-                  objectFit: 'contain'
-                }}
-              />
-            </Link>
+      {/* Animated Toggle Icon */}
+      {isMobile && (
+        <IconButton
+          onClick={toggleDrawer}
+          sx={{
+            position: 'fixed',
+            top: 8,        // Move closer to top
+            right: 12,      // Move closer to right
+            zIndex: 1500,
+            padding: 0.5,  // Minimal padding
+            transition: 'transform 0.3s ease',
+            '&:hover': {
+              backgroundColor: 'transparent'
+            },
+            backgroundColor: 'transparent'
+          }}
+        >
+          <Box
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transform: drawerOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+              transition: 'transform 0.4s ease'
+            }}
+          >
+            {drawerOpen ? (
+              <CloseIcon sx={{ color: '#333', fontSize: 28 }} />
+            ) : (
+              <MenuIcon sx={{ color: '#333', fontSize: 28 }} />
+            )}
+          </Box>
+        </IconButton>
+      )}
 
-          {isMobile ? (
-            <IconButton edge="end" onClick={toggleDrawer}>
-              <MenuIcon sx={{ color: '#333' }} />
-            </IconButton>
-          ) : (
-            <div className="flex gap-4">
-              {/* {navLinks.map(({ label, path }) => (
-                <div>
+
+      <AppBar
+        position="fixed"
+        className="shadow"
+        sx={{
+          backgroundColor: '#ffffff',
+          transform: showNavbar ? 'translateY(0)' : 'translateY(-100%)',
+          transition: 'transform 0.3s ease-in-out',
+          zIndex: 1200,
+          height: { xs: 56, sm: 80 },
+          justifyContent: 'center'
+        }}
+      >
+        <Toolbar
+          sx={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            minHeight: { xs: 56, sm: 64 },
+            px: 2
+          }}
+        >
+          <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
+            <img
+              src={LogoImg}
+              alt="Logo"
+              style={{
+                height: isMobile ? 40 : 60,
+                objectFit: 'contain'
+              }}
+            />
+          </Link>
+
+          {!isMobile && (
+            <Box sx={{ display: 'flex', gap: 2 }}>
+              {navLinks.map(({ label, path }) => (
                 <NavLink
                   key={label}
                   to={path}
@@ -72,21 +127,6 @@ export default function Navbar() {
                 >
                   {label}
                 </NavLink>
-                </div>
-              ))} */}
-              {navLinks.map(({ label, path }) => (
-                <div key={label}>
-                  <NavLink
-                    to={path}
-                    className={({ isActive }) =>
-                      `nav-link relative px-2 py-2 font-medium transition duration-200 ${
-                        isActive ? 'active' : ''
-                      }`
-                    }
-                  >
-                    {label}
-                  </NavLink>
-                </div>
               ))}
 
               {auth.token && (
@@ -94,14 +134,11 @@ export default function Navbar() {
                   onClick={logout}
                   sx={{
                     color: '#222',
-                    fontWeight: '550',
+                    fontWeight: 550,
                     fontSize: '1rem',
                     textTransform: 'none',
                     px: 2,
                     py: 1,
-                    position: 'relative',
-                    bottom: 5,
-                    minWidth: 'unset',
                     backgroundColor: '#7fe7ebbe',
                     '&:hover': {
                       backgroundColor: 'rgba(88, 177, 172, 0.77)',
@@ -112,18 +149,25 @@ export default function Navbar() {
                   Logout
                 </Button>
               )}
-            </div>
+            </Box>
           )}
         </Toolbar>
       </AppBar>
 
-      <Drawer anchor="right" open={drawerOpen} onClose={toggleDrawer}>
-        <List className="w-64">
-          {/* {navLinks.map(({ label, path }) => (
-            <ListItem button key={label} component={navLinks} to={path} onClick={toggleDrawer}>
-              <ListItemText primary={label} />
-            </ListItem>
-          ))} */}
+      <Drawer
+        anchor="right"
+        open={drawerOpen}
+        onClose={toggleDrawer}
+        PaperProps={{
+          sx: {
+            width: 250,
+            paddingTop: 2,
+            backgroundColor: '#fff',
+            zIndex: 1400
+          }
+        }}
+      >
+        <List>
           {navLinks.map(({ label, path }) => (
             <ListItem
               button
@@ -146,3 +190,4 @@ export default function Navbar() {
     </>
   );
 }
+

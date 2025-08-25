@@ -4,6 +4,9 @@ html, body {
   height: 100%;
 }
 
+body {
+  padding-top: 100px;
+}
 .app-container {
   display: flex;
   flex-direction: column;
@@ -53,7 +56,11 @@ footer {
 
 
 
-
+@media (max-width: 768px) {
+  body {
+    padding-top: 64px; 
+  }
+}
 
 
 
