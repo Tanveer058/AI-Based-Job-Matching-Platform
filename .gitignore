@@ -1,0 +1,25 @@
+# Global ignores
+.DS_Store
+.env
+.env.local
+.env.production
+*.log
+
+# Ignore node_modules in both client and server
+client/node_modules/
+server/node_modules/
+
+# Ignore build artifacts
+client/build/
+server/dist/
+
+# Ignore OS-specific files
+Thumbs.db
+*.swp
+
+# Ignore IDE/editor configs
+.vscode/
+.idea/
+
+# Optional: ignore test coverage
+coverage/
