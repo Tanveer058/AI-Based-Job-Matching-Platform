@@ -1,24 +1,7 @@
-// import axios from 'axios';
-
-// const API = axios.create({
-//   baseURL: 'http://localhost:5000/api', // it is to be Adjusted if backend is deployed 
-//   withCredentials: true,
-// });
-
-// API.interceptors.request.use((req) => {
-//   const token = localStorage.getItem('token');
-//   if (token) req.headers.Authorization = `Bearer ${token}`;
-//   return req;
-// });
-
-// export default API;
-
-
-
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://localhost:5000/api', // Adjusted to match your backend port
+  baseURL: 'http://localhost:5000/api',
   withCredentials: true,
 });
 

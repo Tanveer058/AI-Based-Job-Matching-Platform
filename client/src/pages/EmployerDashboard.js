@@ -26,7 +26,6 @@ export default function EmployerDashboard() {
       setLoading(true);
       setError('');
       try {
-        // const res = await API.get(`/jobs?postedBy=${auth.userId}`);
         const res = await API.get('/jobs/jobsByEmployer');
         setJobs(res.data);
         if (res.data.length === 0) {

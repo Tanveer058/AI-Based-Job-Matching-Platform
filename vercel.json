@@ -1,0 +1,14 @@
+{
+  "projects": {
+    "ai-based-job-matching-platform": {
+      "rootDirectory": "server"
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/index.js"
+    }
+  ]
+}
+

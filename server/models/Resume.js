@@ -1,40 +1,22 @@
-// import mongoose from 'mongoose';
-
-
-// const resumeSchema = new mongoose.Schema({
-//   userId: mongoose.Schema.Types.ObjectId,
-//   skills: [String],
-//   education: [String],
-//   experience: String,
-//   resumeFile: {
-//     filename: String,
-//     mimetype: String,
-//     path: String
-//   }
-// });
-
-// const Resume = mongoose.model('Resume', resumeSchema);
-// export default Resume;
-
 
 import mongoose from 'mongoose';
 
 const resumeSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User', // Assuming you have a User model. This is good practice.
+    ref: 'User', 
     required: true
   },
   email: {
     type: String,
-    required: true, // Make this required if every resume must be linked to an email
+    required: true,
     lowercase: true,
     trim: true
   },
   profileSummary: {
     type: String,
     trim: true,
-    maxlength: 2000 // Good to have a limit to prevent abuse
+    maxlength: 2000 
   },
   skills: [{
     type: String,
@@ -54,7 +36,7 @@ const resumeSchema = new mongoose.Schema({
     path: String
   }
 }, {
-  timestamps: true // Adds createdAt and updatedAt automatically. Highly recommended.
+  timestamps: true // Adds createdAt and updatedAt automatically
 });
 
 // Index for better search performance on common fields like email

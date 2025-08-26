@@ -17,9 +17,14 @@ connectDB();
 app.use(express.json());
 
 app.use(cors({
-  origin: 'http://localhost:3000',
+  // origin: 'http://localhost:3000',
+  origin: process.env.CLIENT_URL,
   credentials: true
 }));
+
+app.get("/", (req, res) => {
+  res.send("API is running...");
+});
 
 // Serve uploaded resumes statically
 import path from 'path';
@@ -35,3 +40,16 @@ app.use('/api/linkedin', linkedinRoutes);
 
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+///////////////// below code is for vercel deployment only /////////////////////////
+// Only start server if running locally
+if (process.env.NODE_ENV !== "vercel") {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+  });
+}
+
+//Export for Vercel
+export default app

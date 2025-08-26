@@ -1,4 +1,3 @@
-// Reusable animated loading indicator for UX
 export default function LoadingDots({ message = "Loading" }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 120 }}>

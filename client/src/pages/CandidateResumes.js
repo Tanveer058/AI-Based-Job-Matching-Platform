@@ -64,7 +64,6 @@ export default function CandidateResumes() {
   };
 
   const handleEdit = (resumeId) => {
-    // navigate(`/resume-builder?edit=${resumeId}`);
     navigate(`/update-resume/${resumeId}`);
 
   };
