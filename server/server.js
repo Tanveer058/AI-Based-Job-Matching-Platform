@@ -16,11 +16,13 @@ connectDB();
 // app.use(cors());
 app.use(express.json());
 
-app.options('*', cors({
-  origin: process.env.CLIENT_URL,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  credentials: true
-}));
+// app.use(cors({
+//   // origin: 'http://localhost:3000',
+//   origin: process.env.CLIENT_URL,
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   credentials: true
+// }));
+app.use(cors({ origin: "*" }));
 
 
 app.get("/", (req, res) => {
