@@ -39,7 +39,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
 ///////////////// below code is for vercel deployment only /////////////////////////
