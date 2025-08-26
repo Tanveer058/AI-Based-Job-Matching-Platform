@@ -43,9 +43,10 @@ const PORT = process.env.PORT || 8080;
 
 
 ///////////////// below code is for vercel deployment only /////////////////////////
+
 // Only start server if running locally
 if (process.env.NODE_ENV !== "vercel") {
-  const PORT = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 8080;
   app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
