@@ -16,12 +16,12 @@ connectDB();
 // app.use(cors());
 app.use(express.json());
 
-app.use(cors({
-  // origin: 'http://localhost:3000',
+app.options('*', cors({
   origin: process.env.CLIENT_URL,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   credentials: true
 }));
+
 
 app.get("/", (req, res) => {
   res.send("API is running...");
