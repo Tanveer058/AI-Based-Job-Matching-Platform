@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'https://ai-job-matching.vercel.app/api',
+  baseURL: 'https://ai-job-matching-gules.vercel.app/api',
   // baseURL: 'http://localhost:5000/api',
   withCredentials: true,
 });
