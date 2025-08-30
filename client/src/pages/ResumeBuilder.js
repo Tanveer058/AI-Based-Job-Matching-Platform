@@ -3,9 +3,10 @@ import API from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import LoadingDots from '../components/LoadingDots';
 import toast from 'react-hot-toast';
+import { useContext } from 'react';
+import { AuthContext } from '../context/AuthContext';
 
 export default function ResumeBuilder() {
-  // 1. Update state to include new fields
   const [form, setForm] = useState({
     email: '',
     profileSummary: '',
@@ -17,75 +18,139 @@ export default function ResumeBuilder() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { auth } = useContext(AuthContext);
+  // const userId = auth?.user?._id;
+  const userId = auth?.userId;
+  const email = auth?.user?.email;
 
 
-  const handleFileChange = (e) => {
-    const selected = e.target.files[0];
-    if (selected) {
-      const allowed = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
-      if (!allowed.includes(selected.type)) {
-        setError('Only PDF and DOCX files are allowed.');
-        setFile(null);
-        return;
-      }
-      setError('');
-      setFile(selected);
-    }
-  };
+  // const handleFileChange = (e) => {
+  //   const selected = e.target.files[0];
+  //   const allowed = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 
-  const handleSubmit = async () => {
-    setLoading(true);
+  //   if (selected && allowed.includes(selected.type)) {
+  //     setFile(selected);
+  //     setError('');
+  //   } else {
+  //     setFile(null);
+  //     setError('Only PDF and DOCX files are allowed.');
+  //   }
+  // };
+const handleFileChange = (e) => {
+  const selected = e.target.files[0];
+  const allowed = ['application/pdf', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
+
+  if (selected && allowed.includes(selected.type)) {
+    setFile(selected);
     setError('');
+  } else {
+    setFile(null);
+    setError('Only PDF and DOCX files are allowed.');
+  }
+};
 
-    // Update validation logic
-    const hasManualData = form.email || form.profileSummary || form.skills || form.education || form.experience;
-    const hasFile = !!file;
 
-    if (!hasManualData && !hasFile) {
-      setError('Please provide resume details or upload a file.');
-      setLoading(false);
-      return;
-    }
+  // const handleSubmit = async () => {
+  //   setLoading(true);
+  //   setError('');
 
-    // Basic email validation
-    if (form.email && !/\S+@\S+\.\S+/.test(form.email)) {
-      setError('Please enter a valid email address.');
-      setLoading(false);
-      return;
-    }
+  //   const hasManualData = form.email || form.profileSummary || form.skills || form.education || form.experience;
+  //   const hasFile = !!file;
 
-    try {
-      const formData = new FormData();
-      // Append all form fields to the FormData object
-      formData.append('email', form.email);
-      formData.append('profileSummary', form.profileSummary);
-      formData.append('skills', form.skills);
-      formData.append('education', form.education);
-      formData.append('experience', form.experience);
-      if (hasFile) formData.append('resumeFile', file);
+  //   if (!hasManualData && !hasFile) {
+  //     setError('Please provide resume details or upload a file.');
+  //     setLoading(false);
+  //     return;
+  //   }
 
-      await API.post('/resume', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+  //   if (form.email && !/\S+@\S+\.\S+/.test(form.email)) {
+  //     setError('Please enter a valid email address.');
+  //     setLoading(false);
+  //     return;
+  //   }
 
-      // alert('Resume saved successfully!');
-      toast.success('Resume saved successfully!', { position: 'top-right', duration: 2000 });
-      navigate('/candidate-resumes');
-    } catch (err) {
-      toast.error('Failed to save resume. Please try again.', err.message, { position: 'top-center', duration: 2000 });
-      console.error('Submission error:', err);
-      setError(err.response?.data?.message || 'Failed to save resume. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  };
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append('email', form.email);
+
+  //     if (hasManualData) {
+  //       formData.append('profileSummary', form.profileSummary);
+  //       formData.append('skills', form.skills);
+  //       formData.append('education', form.education);
+  //       formData.append('experience', form.experience);
+  //       if (hasFile) formData.append('resumeFile', file);
+
+  //       await API.post('/resume', formData, {
+  //         headers: { 'Content-Type': 'multipart/form-data' }
+  //       });
+  //     } else {
+  //       // Upload-only flow
+  //       formData.append('resume', file);
+  //       formData.append('userId', 'user-id-from-auth'); // Replace with actual userId from context or auth
+  //       await API.post('/resume/upload', formData, {
+  //         headers: { 'Content-Type': 'multipart/form-data' }
+  //       });
+  //     }
+
+  //     toast.success('Resume saved successfully!', { position: 'top-right', duration: 2000 });
+  //     navigate('/candidate-resumes');
+  //   } catch (err) {
+  //     console.error('Submission error:', err);
+  //     toast.error('Failed to save resume. Please try again.', { position: 'top-center', duration: 2000 });
+  //     setError(err.response?.data?.message || 'Failed to save resume. Please try again.');
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const handleSubmit = async () => {
+  setLoading(true);
+  setError('');
+
+  const hasManualData = form.profileSummary || form.skills || form.education || form.experience;
+  const hasFile = !!file;
+
+  if (!form.email || !/\S+@\S+\.\S+/.test(form.email)) {
+    setError('Please enter a valid email address.');
+    setLoading(false);
+    return;
+  }
+
+  if (!hasManualData && !hasFile) {
+    setError('Please provide resume details or upload a file.');
+    setLoading(false);
+    return;
+  }
+
+  try {
+    const formData = new FormData();
+    formData.append('email', form.email);
+    formData.append('profileSummary', form.profileSummary);
+    formData.append('skills', form.skills);
+    formData.append('education', form.education);
+    formData.append('experience', form.experience);
+    if (hasFile) formData.append('resumeFile', file);
+
+    await API.post('/resume', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+
+    toast.success('Resume saved successfully!', { position: 'top-right', duration: 2000 });
+    navigate('/candidate-resumes');
+  } catch (err) {
+    console.error('Submission error:', err);
+    toast.error('Failed to save resume. Please try again.', { position: 'top-center', duration: 2000 });
+    setError(err.response?.data?.message || 'Failed to save resume. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
       <h2 className="text-2xl font-bold text-gray-800 mb-6">Build Your Resume</h2>
 
       <div className="space-y-4">
-        {/* Added new input fields for email and profile summary */}
         <input
           type="email"
           placeholder="Email *"
@@ -96,7 +161,7 @@ export default function ResumeBuilder() {
         />
 
         <textarea
-          placeholder="Profile Summary (Describe your experience, skills, and career goals. This helps AI find better matches for you!)"
+          placeholder="Profile Summary"
           rows={4}
           className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[rgba(88,177,172,0.77)] focus:border-[rgba(88,177,172,0.77)] resize-none"
           onChange={e => setForm({ ...form, profileSummary: e.target.value })}
@@ -105,7 +170,7 @@ export default function ResumeBuilder() {
 
         <input
           type="text"
-          placeholder="Skills (e.g., Python, JavaScript, Project Management)"
+          placeholder="Skills (comma separated)"
           className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[rgba(88,177,172,0.77)] focus:border-[rgba(88,177,172,0.77)]"
           onChange={e => setForm({ ...form, skills: e.target.value })}
           value={form.skills}
@@ -113,14 +178,14 @@ export default function ResumeBuilder() {
 
         <input
           type="text"
-          placeholder="Education (e.g., BSc Computer Science - MIT, 2020)"
+          placeholder="Education (comma separated)"
           className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[rgba(88,177,172,0.77)] focus:border-[rgba(88,177,172,0.77)]"
           onChange={e => setForm({ ...form, education: e.target.value })}
           value={form.education}
         />
 
         <textarea
-          placeholder="Work Experience (Describe your previous roles and responsibilities)"
+          placeholder="Work Experience"
           rows={4}
           className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-[rgba(88,177,172,0.77)] focus:border-[rgba(88,177,172,0.77)] resize-none"
           onChange={e => setForm({ ...form, experience: e.target.value })}
@@ -135,7 +200,7 @@ export default function ResumeBuilder() {
             onChange={handleFileChange}
           />
           {file && (
-            <span className="text-sm font-medium p-2" style={{backgroundColor: '#7fe7ebbe' }}>
+            <span className="text-sm font-medium p-2" style={{ backgroundColor: '#7fe7ebbe' }}>
               Selected: {file.name}
             </span>
           )}
@@ -147,9 +212,7 @@ export default function ResumeBuilder() {
           onClick={handleSubmit}
           disabled={loading}
           className="w-full text-black font-semibold py-2 px-4 rounded transition disabled:opacity-50 disabled:cursor-not-allowed"
-          style={{
-            backgroundColor: '#7fe7ebbe',
-          }}
+          style={{ backgroundColor: '#7fe7ebbe' }}
           onMouseOver={(e) => e.target.style.backgroundColor = 'rgba(88,177,172,0.77)'}
           onMouseOut={(e) => e.target.style.backgroundColor = '#7fe7ebbe'}
         >

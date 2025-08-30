@@ -16,13 +16,12 @@ connectDB();
 // app.use(cors());
 app.use(express.json());
 
-// app.use(cors({
-//   // origin: 'http://localhost:3000',
-//   origin: process.env.CLIENT_URL,
-//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   credentials: true
-// }));
-app.use(cors({ origin: "*" }));
+app.use(cors({
+  origin: 'https://ai-job-matching.netlify.app',
+  // origin: 'http://localhost:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  credentials: true
+}));
 
 
 app.get("/", (req, res) => {
@@ -42,7 +41,7 @@ app.use('/api/jobs', jobRoutes);
 app.use('/api/linkedin', linkedinRoutes);
 
 const PORT = process.env.PORT || 8080;
-// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
 
 ///////////////// below code is for vercel deployment only /////////////////////////
@@ -55,5 +54,5 @@ if (process.env.NODE_ENV !== "vercel") {
   });
 }
 
-//Export for Vercel
+// Export for Vercel
 export default app

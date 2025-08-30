@@ -31,10 +31,18 @@ const resumeSchema = new mongoose.Schema({
     trim: true
   },
   resumeFile: {
-    filename: String,
-    mimetype: String,
-    path: String
+    filename: { type: String },
+    mimetype: { type: String },
+    path: {
+      type: String,
+      // required: true
+    },
+    public_id: {
+      type: String,
+      // required: true
+    }
   }
+
 }, {
   timestamps: true // Adds createdAt and updatedAt automatically
 });

@@ -2,6 +2,7 @@ import fs from 'fs';
 import pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 import Resume from '../models/Resume.js';
+import cloudinary from '../config/cloudinary.js'; // for delete uploaded resume file from cloudinary
 
 const extractTextFromFile = async (file) => {
   try {
@@ -80,13 +81,94 @@ const extractSections = (text) => {
 };
 
 
+// export const createResume = async (req, res) => {
+//   try {
+//     // 1. Destructure NEW fields from req.body
+//     const { email, profileSummary, skills, education, experience } = req.body;
+//     const file = req.file;
+    
+
+//     // 2. Update validation to include new fields
+//     const hasManualData = email || profileSummary || skills || education || experience;
+//     const allowedTypes = [
+//       'application/pdf',
+//       'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+//     ];
+
+//     let resumeFile = null;
+//     // 3. Initialize extracted data with new fields
+//     let extracted = { 
+//       email: '', 
+//       profileSummary: '', 
+//       skills: [], 
+//       education: [], 
+//       experience: '' 
+//     };
+
+//     if (file) {
+//       if (!allowedTypes.includes(file.mimetype)) {
+//         return res.status(400).json({ error: 'Unsupported file type' });
+//       }
+
+//       resumeFile = {
+//         filename: file.filename,
+//         mimetype: file.mimetype,
+//         path: file.path
+//       };
+
+//       const rawText = await extractTextFromFile(file);
+//       extracted = extractSections(rawText);
+//     }
+
+//     // 4. Validate that we have at least an email (if required by your schema)
+//     const finalEmail = email || extracted.email;
+//     if (!finalEmail) {
+//       return res.status(400).json({ error: 'Email is required.' });
+//     }
+
+//     if (!hasManualData && !file) {
+//       return res.status(400).json({ error: 'Please provide resume details or upload a file.' });
+//     }
+
+//     // 5. Create the resume with ALL fields, choosing between manual input and extracted data
+//     const resume = await Resume.create({
+//       userId: req.user.userId,
+//       email: finalEmail,
+//       profileSummary: profileSummary || extracted.profileSummary,
+//       skills: skills ? skills.split(',').map(s => s.trim()) : extracted.skills,
+//       education: education ? education.split(',').map(e => e.trim()) : extracted.education,
+//       experience: experience || extracted.experience,
+//       resumeFile
+//     });
+
+//     // 6. Clean up the uploaded file after processing (optional but good practice)
+//     if (file) {
+//       fs.unlink(file.path, (err) => {
+//         if (err) console.error('Error deleting file:', err);
+//       });
+//     }
+
+//     res.status(201).json(resume);
+//   } catch (err) {
+//     console.error('Resume creation failed:', err);
+//     res.status(400).json({ error: 'Resume creation failed', details: err.message });//400 for bad request
+//   }
+// };
 export const createResume = async (req, res) => {
   try {
-    // 1. Destructure NEW fields from req.body
-    const { email, profileSummary, skills, education, experience } = req.body;
-    const file = req.file;
+    if (!req.body) {
+      return res.status(400).json({ error: 'Missing form data.' });
+    }
 
-    // 2. Update validation to include new fields
+    const {
+      email = '',
+      profileSummary = '',
+      skills = '',
+      education = '',
+      experience = ''
+    } = req.body;
+
+    const file = req.file;
     const hasManualData = email || profileSummary || skills || education || experience;
     const allowedTypes = [
       'application/pdf',
@@ -94,13 +176,12 @@ export const createResume = async (req, res) => {
     ];
 
     let resumeFile = null;
-    // 3. Initialize extracted data with new fields
-    let extracted = { 
-      email: '', 
-      profileSummary: '', 
-      skills: [], 
-      education: [], 
-      experience: '' 
+    let extracted = {
+      email: '',
+      profileSummary: '',
+      skills: [],
+      education: [],
+      experience: ''
     };
 
     if (file) {
@@ -118,7 +199,6 @@ export const createResume = async (req, res) => {
       extracted = extractSections(rawText);
     }
 
-    // 4. Validate that we have at least an email (if required by your schema)
     const finalEmail = email || extracted.email;
     if (!finalEmail) {
       return res.status(400).json({ error: 'Email is required.' });
@@ -128,7 +208,6 @@ export const createResume = async (req, res) => {
       return res.status(400).json({ error: 'Please provide resume details or upload a file.' });
     }
 
-    // 5. Create the resume with ALL fields, choosing between manual input and extracted data
     const resume = await Resume.create({
       userId: req.user.userId,
       email: finalEmail,
@@ -139,7 +218,6 @@ export const createResume = async (req, res) => {
       resumeFile
     });
 
-    // 6. Clean up the uploaded file after processing (optional but good practice)
     if (file) {
       fs.unlink(file.path, (err) => {
         if (err) console.error('Error deleting file:', err);
@@ -149,11 +227,41 @@ export const createResume = async (req, res) => {
     res.status(201).json(resume);
   } catch (err) {
     console.error('Resume creation failed:', err);
-    res.status(400).json({ error: 'Resume creation failed' });
+    res.status(400).json({ error: 'Resume creation failed', details: err.message });
   }
 };
 
-// Get resume for logged-in user
+
+export const uploadResume = async (req, res) => {
+  try {
+    const resumeUrl = req.file.path;
+    const file = req.file;
+    const { userId, email } = req.body;
+
+    if (!userId || !email || !resumeUrl) {
+      return res.status(400).json({ error: 'Missing required fields.' });
+    }
+
+    const resume = await Resume.create({
+      userId,
+      email,
+      resumeFile: {
+        filename: req.file.originalname,
+        mimetype: req.file.mimetype,
+        path: file.secure_url, // always publicly accessible
+        public_id: file.filename
+      }
+    });
+console.log('Cloudinary file:', req.file);
+
+    res.status(201).json(resume);
+  } catch (err) {
+    console.error('Resume upload failed:', err);
+    res.status(500).json({ error: 'Resume upload failed', details: err.message });
+  }
+};
+
+
 export const getResume = async (req, res) => {
   try {
     const resumes = await Resume.find({ userId: req.user.userId });
@@ -224,45 +332,54 @@ export const updateResume = async (req, res) => {
 // Delete a user's resume
 export const deleteResume = async (req, res) => {
   try {
-    const { id } = req.params; // Get the resume ID from the URL parameters
+    const { id } = req.params;
 
-    // 1. Find the resume first
+    // 1. Find the resume by ID and user
     const resume = await Resume.findOne({ _id: id, userId: req.user.userId });
 
     if (!resume) {
       return res.status(404).json({ error: 'Resume not found' });
     }
 
-    // 2. Check if there is an associated file and delete it from the filesystem
-    if (resume.resumeFile && resume.resumeFile.path) {
-      // Use fs.unlink to delete the file
-      fs.unlink(resume.resumeFile.path, (err) => {
-        if (err) {
-          // Don't necessarily fail the request if file deletion fails, but log it.
-          console.error('Failed to delete associated resume file:', err);
-        } else {
-          console.log('Successfully deleted file:', resume.resumeFile.path);
+    const publicId = resume.resumeFile?.public_id;
+
+    // 2. Attempt to delete Cloudinary file if it exists
+    if (publicId) {
+      let deleted = false;
+
+      try {
+        await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
+        console.log('Deleted from Cloudinary as image:', publicId);
+        deleted = true;
+      } catch (err) {
+        console.warn('Image deletion failed, trying raw:', err.message);
+      }
+       if (!deleted) {
+        try {
+          await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+          console.log('Deleted from Cloudinary as raw:', publicId);
+        } catch (err) {
+          console.error('Raw deletion failed:', err.message);
         }
-      });
+      }
     }
 
-    // 3. Delete the resume document from MongoDB
+    // 3. Delete resume document from MongoDB
     await Resume.findByIdAndDelete(id);
 
-    // 4. Send a success response
-    res.status(200).json({ message: 'Resume deleted successfully' });
+    // 4. Respond with success
+    res.status(200).json({ message: 'Resume and file deleted successfully' });
 
   } catch (err) {
     console.error('Resume deletion failed:', err);
 
-    // Handle specific errors
     if (err.name === 'CastError') {
       return res.status(400).json({ error: 'Invalid resume ID' });
     }
-
-    res.status(500).json({ error: 'Failed to delete resume' });
+    res.status(500).json({ error: 'Failed to delete resume', details: err.message });
   }
 };
+
 
 //Preview resume before saving
 export const previewResume = async (req, res) => {
@@ -315,4 +432,5 @@ export const getResumeFile = async (req, res) => {
     res.status(500).json({ error: 'Failed to download file' });
   }
 };
+
 
