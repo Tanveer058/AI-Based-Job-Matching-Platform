@@ -16,12 +16,18 @@ connectDB();
 // app.use(cors());
 app.use(express.json());
 
-app.use(cors({
-  origin: 'https://ai-job-matching.netlify.app',
-  // origin: 'http://localhost:3000',
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  credentials: true
-}));
+// app.use(cors({
+//   origin: 'https://ai-job-matching.netlify.app',
+//   // origin: 'http://localhost:3000',
+//   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+//   credentials: true
+// }));
+  app.use(cors({
+    origin: 'https://ai-job-matching.netlify.app',
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+  }));
 
 
 app.get("/", (req, res) => {
